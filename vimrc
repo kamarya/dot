@@ -7,6 +7,10 @@ set guioptions-=L
 " Leader key
 let mapleader = ","
 
+" Don't dawdle after Esc waiting for a possible key-code sequence
+set ttimeout
+set ttimeoutlen=10
+
 " Ignore case when searching
 set ignorecase
 
@@ -47,4 +51,18 @@ set number
 set background=dark
 set termguicolors
 colorscheme kamary
+
+" Cursor shape: blinking vertical bar in insert mode only, steady block otherwise
+if !has('nvim')
+  let &t_SI = "\<Esc>[5 q"
+  let &t_EI = "\<Esc>[2 q"
+  let &t_SR = "\<Esc>[2 q"
+endif
+set guicursor=n-v-c-sm:block,i-ci-ve:ver25-blinkon400-blinkoff250,r-cr-o:hor20
+
+" Restore terminal to a steady block cursor when vim exits
+augroup RestoreCursorShape
+  autocmd!
+  autocmd VimLeave * silent !echo -ne "\e[2 q"
+augroup END
 

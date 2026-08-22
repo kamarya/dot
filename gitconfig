@@ -1,0 +1,14 @@
+[alias]
+	gl = config --global -l
+	last = log -1 HEAD --stat
+	ll = log --oneline
+	st = status -sb
+	fa = fetch --all
+	c = checkout
+	b = branch
+	d = diff
+	s = status
+
+[user]
+	name = Kamary
+	email = kamary@domain.internet

@@ -8,7 +8,10 @@
 	b = branch
 	d = diff
 	s = status
+	amd = commit --amend --reset-author --date="now"
 
 [user]
-	name = Kamary
-	email = kamary@domain.internet
+	name = KAMARY
+	email = kamary@internet.online
+[core]
+	editor = vim

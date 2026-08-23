@@ -14,10 +14,19 @@ BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
 
 # repo-relative-path:destination-under-$HOME
 CONFIG_MAP=(
-  "vimrc:.vimrc"
-  "tmux.conf:.tmux.conf"
+  "vim/vimrc:.vim/vimrc"
   "vim/colors/kamary.vim:.vim/colors/kamary.vim"
+  "nvim/init.vim:.config/nvim/init.vim"
+  "nvim/colors/kamary.vim:.config/nvim/colors/kamary.vim"
+  "tmux.conf:.tmux.conf"
   "gitconfig:.gitconfig"
+)
+
+# destination-under-$HOME paths that are no longer used and should be
+# removed (backed up first) so they don't shadow their replacement above,
+# e.g. ~/.vimrc shadowing the fallback ~/.vim/vimrc that vim loads instead.
+REMOVE_LIST=(
+  ".vimrc"
 )
 
 backup_if_present() {
@@ -54,9 +63,24 @@ update_configs() {
     echo "updated: $dest_path"
   done
 
+  remove_stale_configs
+
   if [[ -d "$BACKUP_DIR" ]]; then
     echo "backups of replaced files saved under: $BACKUP_DIR"
   fi
+}
+
+remove_stale_configs() {
+  local rel dest_path
+
+  for rel in "${REMOVE_LIST[@]}"; do
+    dest_path="$HOME/$rel"
+    if [[ -e "$dest_path" || -L "$dest_path" ]]; then
+      backup_if_present "$dest_path"
+      rm -f "$dest_path"
+      echo "removed: $dest_path (see backup)"
+    fi
+  done
 }
 
 install_vim_mark() {

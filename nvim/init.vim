@@ -1,8 +1,13 @@
-" Disable scrollbars (real hackers don't use scrollbars for navigation!)
-set guioptions-=r
-set guioptions-=R
-set guioptions-=l
-set guioptions-=L
+" Neovim configuration
+" Converted from vim/vimrc (guioptions and the terminal cursor-escape
+" fallback were dropped since Neovim doesn't use classic GUI options and
+" handles cursor shape via 'guicursor' natively)
+
+" Syntax highlighting and filetype-aware indent/plugins for all
+" recognized languages (.c, .cpp, .hpp, .rs, .go, etc.) -- on by
+" default in Neovim, set explicitly here for parity with vim/vimrc
+syntax on
+filetype plugin indent on
 
 " Leader key
 let mapleader = ","
@@ -34,35 +39,31 @@ set showmatch
 
 " Turn backup off, since most stuff is in SVN, git etc. anyway...
 set nobackup
-set nowb
+set nowritebackup
 set noswapfile
 
 " Linebreak on 500 characters
-set lbr
-set tw=500
+set linebreak
+set textwidth=500
 
-set ai "Auto indent
-set si "Smart indent
-set wrap "Wrap lines
+set autoindent
+set smartindent
+set wrap
 
 set number
 
+" Highlight the screen line of the cursor
+set cursorline
 
 set background=dark
 set termguicolors
 colorscheme kamary
 
 " Cursor shape: blinking vertical bar in insert mode only, steady block otherwise
-if !has('nvim')
-  let &t_SI = "\<Esc>[5 q"
-  let &t_EI = "\<Esc>[2 q"
-  let &t_SR = "\<Esc>[2 q"
-endif
 set guicursor=n-v-c-sm:block,i-ci-ve:ver25-blinkon400-blinkoff250,r-cr-o:hor20
 
-" Restore terminal to a steady block cursor when vim exits
+" Restore terminal to a steady block cursor when nvim exits
 augroup RestoreCursorShape
   autocmd!
   autocmd VimLeave * silent !echo -ne "\e[2 q"
 augroup END
-

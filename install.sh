@@ -5,7 +5,8 @@
 # Usage:
 #   ./install.sh update_configs   # copy repo config files into $HOME
 #   ./install.sh install_mark     # install vim-mark plugin (+ its dependency)
-#   ./install.sh all              # both of the above (default)
+#   ./install.sh install_skills   # clone agent skill repos into ~/.agents/skills
+#   ./install.sh all              # all of the above (default)
 
 set -euo pipefail
 
@@ -20,6 +21,8 @@ CONFIG_MAP=(
   "nvim/colors/kamary.vim:.config/nvim/colors/kamary.vim"
   "tmux.conf:.tmux.conf"
   "gitconfig:.gitconfig"
+  "agents/AGENTS.md:.agents/AGENTS.md"
+  "agents/CPPSTD.md:.agents/CPPSTD.md"
 )
 
 # destination-under-$HOME paths that are no longer used and should be
@@ -27,6 +30,12 @@ CONFIG_MAP=(
 # e.g. ~/.vimrc shadowing the fallback ~/.vim/vimrc that vim loads instead.
 REMOVE_LIST=(
   ".vimrc"
+)
+
+# agent skill repos to clone (shallow, depth 1) into ~/.agents/skills
+SKILLS_DIR="$HOME/.agents/skills"
+SKILL_REPOS=(
+  "https://github.com/danyuchn/asd-ste100-skill"
 )
 
 backup_if_present() {
@@ -109,13 +118,33 @@ install_vim_mark() {
   echo "restart vim, then use <Leader>m to mark a word, <Leader>n / <Leader>N to jump between marks"
 }
 
+install_skills() {
+  local repo_url repo_name dest_dir
+
+  mkdir -p "$SKILLS_DIR"
+
+  for repo_url in "${SKILL_REPOS[@]}"; do
+    repo_name="$(basename "$repo_url" .git)"
+    dest_dir="$SKILLS_DIR/$repo_name"
+
+    if [[ -d "$dest_dir/.git" ]]; then
+      git -C "$dest_dir" pull --ff-only
+    else
+      git clone --depth 1 "$repo_url" "$dest_dir"
+    fi
+
+    echo "skill installed: $dest_dir"
+  done
+}
+
 main() {
   case "${1:-all}" in
     update_configs) update_configs ;;
     install_mark)   install_vim_mark ;;
-    all)            update_configs; install_vim_mark ;;
+    install_skills) install_skills ;;
+    all)            update_configs; install_vim_mark; install_skills ;;
     *)
-      echo "usage: $0 {update_configs|install_mark|all}" >&2
+      echo "usage: $0 {update_configs|install_mark|install_skills|all}" >&2
       exit 1
       ;;
   esac

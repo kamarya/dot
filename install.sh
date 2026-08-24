@@ -6,6 +6,7 @@
 #   ./install.sh update_configs   # copy repo config files into $HOME
 #   ./install.sh install_mark     # install vim-mark plugin (+ its dependency)
 #   ./install.sh install_skills   # clone agent skill repos into ~/.agents/skills
+#   ./install.sh install_git_completion  # fetch git's bash completion script for zsh's _git
 #   ./install.sh all              # all of the above (default)
 
 set -euo pipefail
@@ -21,6 +22,7 @@ CONFIG_MAP=(
   "nvim/colors/kamary.vim:.config/nvim/colors/kamary.vim"
   "tmux.conf:.tmux.conf"
   "gitconfig:.gitconfig"
+  "zshrc:.zshrc"
   "agents/AGENTS.md:.agents/AGENTS.md"
   "agents/CPPSTD.md:.agents/CPPSTD.md"
 )
@@ -137,14 +139,31 @@ install_skills() {
   done
 }
 
+install_git_completion() {
+  local dest_dir="$HOME/.zsh"
+  local dest_file="$dest_dir/git-completion.bash"
+  local url="https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash"
+
+  mkdir -p "$dest_dir"
+  curl -fsSL "$url" -o "$dest_file"
+  echo "git bash-completion script installed: $dest_file"
+  echo "(used by zsh's _git via the 'script' zstyle in zshrc)"
+}
+
 main() {
   case "${1:-all}" in
-    update_configs) update_configs ;;
-    install_mark)   install_vim_mark ;;
-    install_skills) install_skills ;;
-    all)            update_configs; install_vim_mark; install_skills ;;
+    update_configs)         update_configs ;;
+    install_mark)           install_vim_mark ;;
+    install_skills)         install_skills ;;
+    install_git_completion) install_git_completion ;;
+    all)
+      update_configs
+      install_vim_mark
+      install_skills
+      install_git_completion
+      ;;
     *)
-      echo "usage: $0 {update_configs|install_mark|install_skills|all}" >&2
+      echo "usage: $0 {update_configs|install_mark|install_skills|install_git_completion|all}" >&2
       exit 1
       ;;
   esac

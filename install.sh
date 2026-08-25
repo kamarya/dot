@@ -7,6 +7,7 @@
 #   ./install.sh install_mark     # install vim-mark plugin (+ its dependency)
 #   ./install.sh install_skills   # clone agent skill repos into ~/.agents/skills
 #   ./install.sh install_git_completion  # fetch git's bash completion script for zsh's _git
+#   ./install.sh install_vscode_theme    # install the Kamary VS Code color theme
 #   ./install.sh all              # all of the above (default)
 
 set -euo pipefail
@@ -38,6 +39,16 @@ REMOVE_LIST=(
 SKILLS_DIR="$HOME/.agents/skills"
 SKILL_REPOS=(
   "https://github.com/danyuchn/asd-ste100-skill"
+)
+
+# candidate "extensions" dirs for VS Code and its forks; the theme is
+# installed into whichever of these already exist on this machine
+VSCODE_EXTENSION_DIRS=(
+  "$HOME/.vscode/extensions"
+  "$HOME/.vscode-server/extensions"
+  "$HOME/.vscode-insiders/extensions"
+  "$HOME/.vscode-oss/extensions"
+  "$HOME/.cursor/extensions"
 )
 
 backup_if_present() {
@@ -139,6 +150,34 @@ install_skills() {
   done
 }
 
+install_vscode_theme() {
+  local src_dir="$REPO_DIR/vscode/kamary-theme"
+  local ext_dir dest_dir found=0
+
+  if [[ ! -d "$src_dir" ]]; then
+    echo "skip: $src_dir not found in repo" >&2
+    return
+  fi
+
+  for ext_dir in "${VSCODE_EXTENSION_DIRS[@]}"; do
+    if [[ -d "$ext_dir" ]]; then
+      found=1
+      dest_dir="$ext_dir/kamary-theme"
+      backup_if_present "$dest_dir"
+      mkdir -p "$dest_dir"
+      cp -a "$src_dir/." "$dest_dir/"
+      echo "vscode theme installed: $dest_dir (select \"Kamary\" via Preferences: Color Theme)"
+    fi
+  done
+
+  if [[ "$found" -eq 0 ]]; then
+    dest_dir="$HOME/.vscode/extensions/kamary-theme"
+    mkdir -p "$dest_dir"
+    cp -a "$src_dir/." "$dest_dir/"
+    echo "vscode theme installed: $dest_dir (select \"Kamary\" via Preferences: Color Theme)"
+  fi
+}
+
 install_git_completion() {
   local dest_dir="$HOME/.zsh"
   local dest_file="$dest_dir/git-completion.bash"
@@ -156,14 +195,16 @@ main() {
     install_mark)           install_vim_mark ;;
     install_skills)         install_skills ;;
     install_git_completion) install_git_completion ;;
+    install_vscode_theme)   install_vscode_theme ;;
     all)
       update_configs
       install_vim_mark
       install_skills
       install_git_completion
+      install_vscode_theme
       ;;
     *)
-      echo "usage: $0 {update_configs|install_mark|install_skills|install_git_completion|all}" >&2
+      echo "usage: $0 {update_configs|install_mark|install_skills|install_git_completion|install_vscode_theme|all}" >&2
       exit 1
       ;;
   esac

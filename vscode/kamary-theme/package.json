@@ -1,0 +1,22 @@
+{
+  "name": "kamary-theme",
+  "displayName": "Kamary",
+  "description": "Dark color theme ported from the kamary.vim Vim/Neovim colorscheme",
+  "version": "1.0.0",
+  "publisher": "kamary",
+  "engines": {
+    "vscode": "^1.50.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "contributes": {
+    "themes": [
+      {
+        "label": "Kamary",
+        "uiTheme": "vs-dark",
+        "path": "./themes/kamary-color-theme.json"
+      }
+    ]
+  }
+}

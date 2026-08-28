@@ -8,7 +8,8 @@
 #   ./install.sh install_skills   # clone agent skill repos into ~/.agents/skills
 #   ./install.sh install_git_completion  # fetch git's bash completion script for zsh's _git
 #   ./install.sh install_vscode_theme    # install the Kamary VS Code color theme
-#   ./install.sh all              # all of the above (default)
+#   ./install.sh set_default_shell       # chsh to zsh (interactive, not part of 'all')
+#   ./install.sh all              # all of the above except set_default_shell
 
 set -euo pipefail
 
@@ -189,6 +190,41 @@ install_git_completion() {
   echo "(used by zsh's _git via the 'script' zstyle in zshrc)"
 }
 
+set_default_shell() {
+  local zsh_path
+  zsh_path="$(command -v zsh || true)"
+
+  if [[ -z "$zsh_path" ]]; then
+    echo "zsh not found in PATH; install it first (e.g. apt install zsh)" >&2
+    return 1
+  fi
+
+  if [[ "${SHELL:-}" == "$zsh_path" ]]; then
+    echo "default shell is already $zsh_path"
+    return
+  fi
+
+  if ! grep -qxF "$zsh_path" /etc/shells 2>/dev/null; then
+    echo "warning: $zsh_path is not listed in /etc/shells; chsh may refuse it" >&2
+    echo "  (add it with: echo '$zsh_path' | sudo tee -a /etc/shells)" >&2
+  fi
+
+  echo "changing default shell to $zsh_path (chsh may prompt for your password)"
+  chsh -s "$zsh_path"
+  echo "default shell changed to $zsh_path; log out and back in for it to take effect"
+}
+
+install_git_completion() {
+  local dest_dir="$HOME/.zsh"
+  local dest_file="$dest_dir/git-completion.bash"
+  local url="https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash"
+
+  mkdir -p "$dest_dir"
+  curl -fsSL "$url" -o "$dest_file"
+  echo "git bash-completion script installed: $dest_file"
+  echo "(used by zsh's _git via the 'script' zstyle in zshrc)"
+}
+
 main() {
   case "${1:-all}" in
     update_configs)         update_configs ;;
@@ -196,6 +232,7 @@ main() {
     install_skills)         install_skills ;;
     install_git_completion) install_git_completion ;;
     install_vscode_theme)   install_vscode_theme ;;
+    set_default_shell)      set_default_shell ;;
     all)
       update_configs
       install_vim_mark
@@ -204,7 +241,7 @@ main() {
       install_vscode_theme
       ;;
     *)
-      echo "usage: $0 {update_configs|install_mark|install_skills|install_git_completion|install_vscode_theme|all}" >&2
+      echo "usage: $0 {update_configs|install_mark|install_skills|install_git_completion|install_vscode_theme|set_default_shell|all}" >&2
       exit 1
       ;;
   esac
